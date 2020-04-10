@@ -10,7 +10,7 @@
                     "on_cmd": "http://127.0.0.1/opendoor",
                     "off_cmd": "http://127.0.0.1/opendoor",
                     "method": "GET",
-                    "name": "marios"
+                    "name": "DoorRelay"
                 }
             ]
         }
