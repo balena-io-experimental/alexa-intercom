@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import RPi.GPIO as GPIO
 import time
 from aiohttp import web
@@ -41,6 +40,7 @@ async def opendoor(request):
 if __name__ == '__main__':
 	app = web.Application()
 	app.router.add_get('/opendoor', opendoor)
+	web.run_app(app, port=80)
 
 # Reset all gpio pin
-GPIO.cleanup()
+# GPIO.cleanup()
