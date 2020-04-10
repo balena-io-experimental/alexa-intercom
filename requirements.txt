@@ -1,0 +1,3 @@
+RPi.Gpio
+fauxmo==0.4.7
+aiohttp
