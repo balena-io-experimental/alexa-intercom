@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import RPi.GPIO as GPIO
 import time
+import asyncio
 from aiohttp import web
 # from os import environ
 
@@ -13,19 +14,20 @@ counter = 0 # how many times the door has opened
 maxCounter = 3
 
 GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
 GPIO.setup(relay, GPIO.OUT)
 GPIO.output(relay, 0)
 GPIO.setup(buzzer, GPIO.OUT)
 GPIO.output(buzzer, 0)
 GPIO.setup(ringSense, GPIO.IN)
 
-def triggerRelay(): # open the door
+async def triggerRelay(): # open the door
 	GPIO.output(relay, 1)
-	time.sleep(3)
+	await asyncio.sleep(3)
 	GPIO.output(relay, 0)
 
 async def opendoor(request): # open the door
-	triggerRelay()
+	asyncio.ensure_future(triggerRelay())
 	return web.Response(content_type='text/html', text='The door is open')
 
 async def bellon(request): # enable auto bell
@@ -47,26 +49,26 @@ async def getAutoBellState(request):
 		state = "On"
 	return web.Response(content_type='text/html', text=state)
 
-def autoBell(channel): # autoBell feature
+async def autoBell(channel): # autoBell feature
 	global bell
 	global counter
 	piezoTune() # play piezo tune
 	if bell:
 		counter += 1
 		if counter <= maxCounter:
-			triggerRelay() # open the door
+			asyncio.ensure_future(triggerRelay()) # open the door
 		else:
 			bell = False
 
 GPIO.add_event_detect(ringSense, GPIO.RISING, callback=autoBell, bouncetime=500)
 
-def piezoTune(): # piezo tune
+async def piezoTune(): # piezo tune
 	GPIO.output(buzzer, 1)
-	time.sleep(0.5)
+	await asyncio.sleep(0.5)
 	GPIO.output(buzzer, 0)
-	time.sleep(0.5)
+	await asyncio.sleep(0.5)
 	GPIO.output(buzzer, 1)
-	time.sleep(1)
+	await asyncio.sleep(1)
 	GPIO.output(buzzer, 0)
 
 if __name__ == '__main__':
