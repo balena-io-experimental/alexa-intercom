@@ -1,4 +1,4 @@
-FROM balenalib/%%BALENA_MACHINE_NAME%%-debian:sid-20200420
+FROM balenalib/%%BALENA_MACHINE_NAME%%-debian
 
 # Install dependencies
 RUN apt-get update && \
