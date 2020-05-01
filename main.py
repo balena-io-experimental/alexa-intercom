@@ -2,45 +2,73 @@
 import RPi.GPIO as GPIO
 import time
 from aiohttp import web
-#import logging
 
-#logging.basicConfig(format='%(levelname)s-%(asctime)s: %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG,filename='/App/gpio.log')
+relay = 3 # GPIO of relay
+buzzer = 5 # GPIO of piezo
+bell = False # state of auto bell feature
+ringSense = 7 # GPIO of ring sense
+counter = 0 # how many times the door has opened
+maxCounter = 5 # how many times to open the door per session
 
-# # Set GPIO mode: GPIO.BCM or GPIO.BOARD
-# GPIO.setmode(GPIO.BOARD)
-#
-# # GPIO pins list based on GPIO.BOARD
-# # gpioList1 = [3,5,7,8,10,11,12,13,15]
-# # gpioList2 = [16,18,19,21,22,23,24,26]
-#
-# # Set mode for each gpio pin
-# GPIO.setup(relay, GPIO.OUT)
-
-# while True:
-# 	# Change gpio pins from low to high
-# 	GPIO.output(relay, 1)
-# 	time.sleep(3)
-# 	GPIO.output(relay, 0)
-# 	time.sleep(0.5)
-#
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(3, GPIO.OUT)
-GPIO.output(3, 0)
+GPIO.setup(relay, GPIO.OUT)
+GPIO.output(relay, 0)
+GPIO.setup(buzzer, GPIO.OUT)
+GPIO.output(buzzer, 0)
+GPIO.setup(ringSense, GPIO.IN)
 
-def triggerRelay():
-	relay = 3
+def triggerRelay(): # open the door
 	GPIO.output(relay, 1)
 	time.sleep(3)
 	GPIO.output(relay, 0)
 
-async def opendoor(request):
+async def opendoor(request): # open the door
 	triggerRelay()
-	return web.Response(content_type='text/html', text='ΟΚ')
+	return web.Response(content_type='text/html', text='The door is open')
+
+async def bellon(request): # enable auto bell
+	global bell
+	global counter
+	bell = True
+	counter = 0
+	return web.Response(content_type='text/html', text='Auto bell is enabled')
+
+async def belloff(request): # disable auto bell
+	global bell
+	bell = False
+	return web.Response(content_type='text/html', text='Auto bell is disabled')
+
+async def getState(request):
+	global bell
+	state = "Off"
+	if bell:
+		state = "On"
+	return web.Response(content_type='text/html', text=state)
+
+def autoBell(channel): # autoBell feature
+	global bell
+	global counter
+	piezoTune() # play piezo tune
+	if bell:
+		counter += 1
+		if counter < maxCounter:
+			triggerRelay() # open the door
+
+GPIO.add_event_detect(ringSense, GPIO.RISING, callback=autoBell, bouncetime=500)
+
+def piezoTune(): # piezo tune
+	GPIO.output(buzzer, 1)
+	time.sleep(0.5)
+	GPIO.output(buzzer, 0)
+	time.sleep(0.5)
+	GPIO.output(buzzer, 1)
+	time.sleep(1)
+	GPIO.output(buzzer, 0)
 
 if __name__ == '__main__':
 	app = web.Application()
 	app.router.add_get('/opendoor', opendoor)
+	app.router.add_get('/bellon', bellon)
+	app.router.add_get('/belloff', belloff)
+	app.router.add_get('/state', getState)
 	web.run_app(app, port=80)
-
-# Reset all gpio pin
-# GPIO.cleanup()

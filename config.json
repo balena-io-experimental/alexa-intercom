@@ -10,7 +10,19 @@
                     "on_cmd": "http://127.0.0.1/opendoor",
                     "off_cmd": "http://127.0.0.1/opendoor",
                     "method": "GET",
-                    "name": "DoorRelay"
+                    "name": "Door relay"
+                },
+                {
+                    "port": 12341,
+                    "on_cmd": "http://127.0.0.1/bellon",
+                    "off_cmd": "http://127.0.0.1/belloff",
+                    "method": "GET",
+                    "state_cmd": "http://127.0.0.1/state",
+                    "state_method": "GET",
+                    "state_data": {"state": "data"},
+                    "state_response_on": "On",
+                    "state_response_off": "Off",
+                    "name": "Auto bell"
                 }
             ]
         }
