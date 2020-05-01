@@ -10,6 +10,11 @@
                     "on_cmd": "http://127.0.0.1/opendoor",
                     "off_cmd": "http://127.0.0.1/opendoor",
                     "method": "GET",
+                    "state_cmd": "http://127.0.0.1/opendoorstate",
+                    "state_method": "GET",
+                    "state_data": {"state": "data"},
+                    "state_response_on": "On",
+                    "state_response_off": "Off",
                     "name": "Door relay"
                 },
                 {

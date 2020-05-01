@@ -6,6 +6,7 @@ from aiohttp import web
 # from os import environ
 
 relay = 3 # GPIO of relay
+relayState = False
 buzzer = 5 # GPIO of piezo
 bell = False # state of auto bell feature
 ringSense = 7 # GPIO of ring sense
@@ -23,12 +24,22 @@ GPIO.setup(ringSense, GPIO.IN)
 
 async def triggerRelay(): # open the door
 	GPIO.output(relay, 1)
+	relayState = True
 	await asyncio.sleep(3)
 	GPIO.output(relay, 0)
+	relayState = False
 
 async def opendoor(request): # open the door
+	global relayState
 	asyncio.ensure_future(triggerRelay())
 	return web.Response(content_type='text/html', text='The door is open')
+
+async def getOpenDoorState(request):
+	global relayState
+	state = "Off"
+	if relayState:
+		state = "On"
+	return web.Response(content_type='text/html', text=state)
 
 async def bellon(request): # enable auto bell
 	global bell
@@ -52,7 +63,7 @@ async def getAutoBellState(request):
 async def autoBell(channel): # autoBell feature
 	global bell
 	global counter
-	piezoTune() # play piezo tune
+	asyncio.ensure_future(piezoTune()) # play piezo tune
 	if bell:
 		counter += 1
 		if counter <= maxCounter:
@@ -60,7 +71,10 @@ async def autoBell(channel): # autoBell feature
 		else:
 			bell = False
 
-GPIO.add_event_detect(ringSense, GPIO.RISING, callback=autoBell, bouncetime=500)
+def autoBellSync(channel):
+	asyncio.create_task(autoBell(channel))
+
+GPIO.add_event_detect(ringSense, GPIO.RISING, callback=autoBellSync, bouncetime=500)
 
 async def piezoTune(): # piezo tune
 	GPIO.output(buzzer, 1)
@@ -74,6 +88,7 @@ async def piezoTune(): # piezo tune
 if __name__ == '__main__':
 	app = web.Application()
 	app.router.add_get('/opendoor', opendoor)
+	app.router.add_get('/opendoorstate', getOpenDoorState)
 	app.router.add_get('/bellon', bellon)
 	app.router.add_get('/belloff', belloff)
 	app.router.add_get('/autobellstate', getAutoBellState)
