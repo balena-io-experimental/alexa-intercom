@@ -2,13 +2,15 @@
 import RPi.GPIO as GPIO
 import time
 from aiohttp import web
+# from os import environ
 
 relay = 3 # GPIO of relay
 buzzer = 5 # GPIO of piezo
 bell = False # state of auto bell feature
 ringSense = 7 # GPIO of ring sense
 counter = 0 # how many times the door has opened
-maxCounter = 5 # how many times to open the door per session
+# maxCounter = int(environ.get('MAX_COUNTER', '3')) # how many times to open the door per session (balenaCloud var)
+maxCounter = 3
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(relay, GPIO.OUT)
@@ -38,7 +40,7 @@ async def belloff(request): # disable auto bell
 	bell = False
 	return web.Response(content_type='text/html', text='Auto bell is disabled')
 
-async def getState(request):
+async def getAutoBellState(request):
 	global bell
 	state = "Off"
 	if bell:
@@ -51,8 +53,10 @@ def autoBell(channel): # autoBell feature
 	piezoTune() # play piezo tune
 	if bell:
 		counter += 1
-		if counter < maxCounter:
+		if counter <= maxCounter:
 			triggerRelay() # open the door
+		else:
+			bell = False
 
 GPIO.add_event_detect(ringSense, GPIO.RISING, callback=autoBell, bouncetime=500)
 
@@ -70,5 +74,5 @@ if __name__ == '__main__':
 	app.router.add_get('/opendoor', opendoor)
 	app.router.add_get('/bellon', bellon)
 	app.router.add_get('/belloff', belloff)
-	app.router.add_get('/state', getState)
+	app.router.add_get('/autobellstate', getAutoBellState)
 	web.run_app(app, port=80)
