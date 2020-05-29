@@ -14,8 +14,8 @@
                 },
                 {
                     "port": 12341,
-                    "on_cmd": "http://127.0.0.1/bellon",
-                    "off_cmd": "http://127.0.0.1/belloff",
+                    "on_cmd": "http://127.0.0.1/autobellon",
+                    "off_cmd": "http://127.0.0.1/autobelloff",
                     "method": "GET",
                     "state_cmd": "http://127.0.0.1/autobellstate",
                     "state_method": "GET",
