@@ -49,6 +49,7 @@ async def getAutoBellState(request):
 		state = "On"
 	return web.Response(content_type='text/html', text=state)
 
+'''
 async def autoBell(channel): # autoBell feature
 	global bell
 	global counter
@@ -61,6 +62,7 @@ async def autoBell(channel): # autoBell feature
 			bell = False
 
 GPIO.add_event_detect(ringSense, GPIO.RISING, callback=autoBell, bouncetime=500)
+'''
 
 async def piezoTune(): # piezo tune
 	GPIO.output(buzzer, 1)
@@ -74,7 +76,7 @@ async def piezoTune(): # piezo tune
 if __name__ == '__main__':
 	app = web.Application()
 	app.router.add_get('/opendoor', opendoor)
-	app.router.add_get('/bellon', bellon)
-	app.router.add_get('/belloff', belloff)
+	app.router.add_get('/autobellon', bellon)
+	app.router.add_get('/autobelloff', belloff)
 	app.router.add_get('/autobellstate', getAutoBellState)
 	web.run_app(app, port=80)
