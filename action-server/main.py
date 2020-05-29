@@ -21,10 +21,19 @@ GPIO.setup(buzzer, GPIO.OUT)
 GPIO.output(buzzer, 0)
 GPIO.setup(ringSense, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
+canBeTriggered = True
 async def triggerRelay(): # open the door
-	GPIO.output(relay, 1)
-	await asyncio.sleep(3)
-	GPIO.output(relay, 0)
+	global canBeTriggered
+	print('Trigger Relay')
+	if canBeTriggered:
+		print('Triggered Relay')
+		canBeTriggered = False
+		GPIO.output(relay, 1)
+		print('Relay On')
+		await asyncio.sleep(3)
+		GPIO.output(relay, 0)
+		print('Relay Off')
+		canBeTriggered = True
 
 async def opendoor(request): # open the door
 	asyncio.ensure_future(triggerRelay())
@@ -49,24 +58,25 @@ async def getAutoBellState(request):
 		state = "On"
 	return web.Response(content_type='text/html', text=state)
 
-'''
-async def autoBell(channel): # autoBell feature
+async def autoBell(): # autoBell feature
 	global bell
 	global counter
-	piezoTune() # play piezo tune
+	print('autobell')
 	if bell:
+		print('AutoBell is On and got triggered')
+		#asyncio.ensure_future(piezoTune()) # play piezo tune
 		counter += 1
+		print('AutoBell Counter: ' + str(counter))
 		if counter <= maxCounter:
-			asyncio.ensure_future(triggerRelay()) # open the door
+			await triggerRelay() # open the door
 		else:
 			bell = False
 
-GPIO.add_event_detect(ringSense, GPIO.RISING, callback=autoBell, bouncetime=500)
-'''
-def test(channel):
+def triggerAutoBell(channel):
 	print('button pressed!')
+	asyncio.run(autoBell())
 
-GPIO.add_event_detect(ringSense, GPIO.RISING, callback=test, bouncetime=500)
+GPIO.add_event_detect(ringSense, GPIO.RISING, callback=triggerAutoBell, bouncetime=1000)
 
 async def piezoTune(): # piezo tune
 	GPIO.output(buzzer, 1)
