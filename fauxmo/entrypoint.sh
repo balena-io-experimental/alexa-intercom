@@ -1,0 +1,1 @@
+fauxmo -c config.json

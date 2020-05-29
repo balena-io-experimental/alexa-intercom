@@ -1,0 +1,12 @@
+version: '2'
+services:
+    fauxmo:
+        build: ./fauxmo
+        privileged: true
+        restart: always
+        network_mode: "host"
+    action-server:
+        build: ./action-server
+        privileged: true
+        restart: always
+        network_mode: "host"

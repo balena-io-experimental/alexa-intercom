@@ -13,7 +13,7 @@ counter = 0 # how many times the door has opened
 # maxCounter = int(environ.get('MAX_COUNTER', '3')) # how many times to open the door per session (balenaCloud var)
 maxCounter = 3
 
-GPIO.setmode(GPIO.BOARD)
+GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(relay, GPIO.OUT)
 GPIO.output(relay, 0)
